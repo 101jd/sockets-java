@@ -1,48 +1,31 @@
-package server;
+package client;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.IOException;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+/**
+ * Главный класс клиентской части, который устанавливает соединение с сервером.
+ */
 public class Main {
-    public static <socket> void main(String[] args) {
-        String IPaddr = "127.0.0.1";
-        int port = 55555;
-        InetSocketAddress address = new InetSocketAddress(IPaddr, port);
-        List<Socket> clients = new LinkedList<>();
+    /**
+     * Главный метод, который выполняется при запуске клиентской программы.
+     *
+     * @param args аргументы командной строки (не используются)
+     */
+    public static void main(String[] args) {
+        String IPaddr = "127.0.0.1"; // IP адрес сервера
+        int port = 55555; // Порт сервера
 
-        ServerSocket socket = null;
         try {
-            socket = new ServerSocket();
-            socket.bind(address);
-        } catch (IOException e){
-            System.err.println("Bind failed\n" + e.getMessage());
-        }
+            // Подключение к серверу
+            Socket socket = new Socket(IPaddr, port);
+            System.out.println("Подключение к серверу " + IPaddr + ":" + port);
 
-        listen(socket, clients);
-
-
-    }
-    public static void listen(ServerSocket server, List<Socket> clients) {
-        while (true){
-            try {
-                Socket client = server.accept();
-                clients.add(client);
-                client.getOutputStream()
-                        .write(String.format("You connected to server %s", server.getInetAddress().toString())
-                                .getBytes("ascii"));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                System.err.println("Client connection failed\n" + e.getMessage());;
-            }
+            // Закрытие сокета
+            socket.close(); // Сокет закрывается сразу после подключения
+        } catch (IOException e) {
+            // Обработка ошибки подключения
+            System.out.println("Ошибка подключения к серверу: " + e.getMessage());
         }
     }
 }

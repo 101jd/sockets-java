@@ -1,48 +1,62 @@
 package server;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.LinkedList;
 import java.util.List;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+/**
+ * Главный класс серверной части, который создает серверный сокет
+ * и обрабатывает входящие подключения от клиентов.
+ */
 public class Main {
-    public static <socket> void main(String[] args) {
-        String IPaddr = "127.0.0.1";
-        int port = 55555;
-        InetSocketAddress address = new InetSocketAddress(IPaddr, port);
-        List<Socket> clients = new LinkedList<>();
+    /**
+     * Главный метод, который выполняется при запуске серверной программы.
+     *
+     * @param args аргументы командной строки (не используются)
+     */
+    public static void main(String[] args) {
+        String IPaddr = "127.0.0.1"; // IP адрес сервера
+        int port = 55555; // Порт сервера
+        List<Socket> clients = new LinkedList<>(); // Список подключенных клиентов
 
-        ServerSocket socket = null;
         try {
-            socket = new ServerSocket();
-            socket.bind(address);
-        } catch (IOException e){
-            System.err.println("Bind failed\n" + e.getMessage());
-        }
+            // Создание сервера и ожидание подключения клиентов
+            ServerSocket serverSocket = new ServerSocket(port);
+            System.out.println("Сервер запущен на порту " + port);
 
-        listen(socket, clients);
+            while (true) {
+                Socket clientSocket = serverSocket.accept(); // Ожидание подключения клиента
+                clients.add(clientSocket); // Добавление клиента в список
 
-
-    }
-    public static void listen(ServerSocket server, List<Socket> clients) {
-        while (true){
-            try {
-                Socket client = server.accept();
-                clients.add(client);
-                client.getOutputStream()
-                        .write(String.format("You connected to server %s", server.getInetAddress().toString())
-                                .getBytes("ascii"));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                System.err.println("Client connection failed\n" + e.getMessage());;
+                // Отправка приветственного сообщения клиенту
+                sendWelcomeMessage(clientSocket, IPaddr, port);
             }
+        } catch (IOException e) {
+            // Обработка ошибки сервера
+            System.out.println("Ошибка сервера: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Метод для отправки приветственного сообщения подключившемуся клиенту.
+     *
+     * @param clientSocket сокет клиента
+     * @param ip IP адрес сервера
+     * @param port порт сервера
+     */
+    private static void sendWelcomeMessage(Socket clientSocket, String ip, int port) {
+        try {
+            // Отправка приветственного сообщения клиенту
+            OutputStream out = clientSocket.getOutputStream();
+            String welcomeMessage = "Вы подключены к серверу " + ip + ":" + port + "\n";
+            out.write(welcomeMessage.getBytes());
+            out.flush(); // Принудительная отправка данных
+        } catch (IOException e) {
+            // Обработка ошибки при отправке сообщения
+            System.out.println("Ошибка при отправке сообщения клиенту: " + e.getMessage());
         }
     }
 }
